@@ -8,7 +8,9 @@
 - Kernel CSV_To_Images chứa tập lệnh để chuyển đổi tệp .CSV thành hình ảnh thực ở định dạng .png trong thư mục có cấu trúc.
 - Trước khi chạy predict.py, hãy download dataset và unzip tại ../data
 - Treeview của dự án:
-                        ![image](https://github.com/user-attachments/assets/5223c94b-76cc-456b-84e4-88ec8fecb9af)
+                        ![Screenshot 2024-12-08 033758](https://github.com/user-attachments/assets/e14c64de-1913-447b-acbb-74de62114875)
+
   
-- Nhóm 10 gồm 5 thành viên: ![image](https://github.com/user-attachments/assets/51f7d776-bb02-4a73-96d0-7db00de3b9c3)
+- Nhóm 10 gồm 5 thành viên: ![Screenshot 2024-12-08 033653](https://github.com/user-attachments/assets/85bfa49f-527a-4745-a022-7d23e5de3502)
+
 
