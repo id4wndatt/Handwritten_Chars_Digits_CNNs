@@ -1,6 +1,6 @@
 # XLA_IT5_Group10 - Nhận diện chữ viết tay
 
-- Do Github giới hạn dung lượng project upload
+- Do Github giới hạn dung lượng project upload nên em không upload dataset
 - File dataset nhóm em dùng là https://www.kaggle.com/datasets/sachinpatel21/az-handwritten-alphabets-in-csv-format/data
 - File thuộc quyền sở hữu của Sachin Patel
 - Bộ dữ liệu chứa 26 thư mục (A-Z) chứa các hình ảnh viết tay có kích thước 2828 pixel
