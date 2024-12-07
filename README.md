@@ -1,4 +1,4 @@
-# XLA_IT5_Group10
+# XLA_IT5_Group10 - Nhận diện chữ viết tay
 
 - Do Github giới hạn dung lượng project upload
 - File dataset nhóm em dùng là https://www.kaggle.com/datasets/sachinpatel21/az-handwritten-alphabets-in-csv-format/data
