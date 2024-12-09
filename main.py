@@ -1,35 +1,34 @@
+from src.data_loader.data_loader import load_data, create_dataset
+from src.model.model import build_CNNmodel, evaluate_model
+from src.utils.utils import display_data, rotate_data
+
 import numpy as np
+import tensorflow as tf
 
-from src.data_loader.data_loader import DataLoader
-from src.image_processor.img_processor import ImageProcessor
-from src.model.model import CNNModel
-from src.visualizer.visuallizer import Visualizer
+(x_train, y_train), (x_test, y_test) = load_data()
+rotated_x_train = rotate_data(x_train)
+rotated_x_test = rotate_data(x_test)
 
-if __name__ == "__main__":
-    # Load and preprocess data
-    data_loader = DataLoader('data/A_Z Handwritten Data.csv')
-    train_images, test_images, train_labels, test_labels = data_loader.preprocess_data()
+# Chuyển đổi định dạng cho TensorFlow
+dataset = create_dataset(rotated_x_train, y_train)
+test_dataset = create_dataset(rotated_x_test, y_test)
 
-    # Create and train the model
-    cnn_model = CNNModel()
-    cnn_model.train(train_images, train_labels, test_images, test_labels, epochs=5)
-    cnn_model.save_model('model_result/model.h5')
+model = build_CNNmodel()
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)]
+model.fit(dataset, validation_data=test_dataset, epochs=20, callbacks=callbacks, verbose=2)
 
-    # Evaluate the model
-    val_loss, val_acc = cnn_model.evaluate(test_images, test_labels)
+print("Đánh giá Test Data:")
+evaluate_model(model, rotated_x_test, y_test)
 
-    # Make predictions
-    pred = cnn_model.model.predict(test_images)
-    pred_labels = np.argmax(pred, axis=1)
+print("Đánh giá Train Data:")
+evaluate_model(model, rotated_x_train, y_train)
 
-    # Visualize predictions
-    vs = Visualizer()
-    vs.visualize_pred(test_images, test_labels, pred_labels)
-    vs.plot_confusion_matrix(test_labels, pred_labels)
+# Dự đoán một số mẫu ngẫu nhiên
+random_sample_val = np.random.choice(rotated_x_test.shape[0], 9, replace=False)
+random_samples = rotated_x_test[random_sample_val]
+true_labels = y_test[random_sample_val]
 
-    # Process and predict custom images
-    image_processor = ImageProcessor()
-    test_image_path=(r'test/Screenshot 2024-11-21 at 8.27.24 PM.png')
-    chars = image_processor.preprocess_and_segment_image(test_image_path)
-    preds = image_processor.predict_chars(cnn_model.model, chars)
-    print(f"Dự đoán cho {test_image_path}: {preds}")
+predictions = model.predict(random_samples)
+display_data(random_samples, true_labels, predictions)
+
+model.save("model_result/emnist_model.keras")

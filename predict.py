@@ -1,58 +1,83 @@
 import numpy as np
 import cv2
 import tensorflow as tf
+from matplotlib import pyplot as plt
+
+# Định nghĩa nhãn ký tự
+char_labels = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 
-class PredictImage:
-    def __init__(self, model_path):
-        # Load the pre-trained model
-        self.model = tf.keras.models.load_model(model_path)
-        self.char_labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+def preprocess_and_segment_image(filepath):
+    img = cv2.imread(filepath)
 
-    def preprocess_img(self, filepath):
-        # Preprocess an input image for prediction
-        img = cv2.imread(filepath)
-        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        blur_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
-        binary_image = cv2.adaptiveThreshold(blur_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 41, 25)
+    plt.figure(figsize=(8, 8))
+    plt.title("Ảnh gốc")
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    plt.axis('off')
+    plt.show()
 
-        # Connected component labeling
-        num_labels, labels_im = cv2.connectedComponents(binary_image, connectivity=8)
-        chars = []
-        bounding_boxes = []
+    gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        for label in range(1, num_labels):
-            mask = (labels_im == label).astype(np.uint8) * 255
-            x, y, w, h = cv2.boundingRect(mask)
+    blur_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
+    binary_image = cv2.adaptiveThreshold(blur_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 41, 25)
+    num_labels, labels_im = cv2.connectedComponents(binary_image, connectivity=8)
 
-            if w < 10 or h < 10:  # Ignore noise
-                continue
+    chars = []
+    bounding_boxes = []
 
-            char = binary_image[y:y + h, x:x + w]
-            resized_char = cv2.resize(char, (18, 18))
-            padded_char = np.pad(resized_char, ((5, 5), (5, 5)), mode='constant', constant_values=0)
-            chars.append(padded_char.reshape(28, 28, 1) / 255)  # Normalize and reshape
-            bounding_boxes.append((x, y, w, h))  # Store bounding box
+    for label in range(1, num_labels):
+        mask = (labels_im == label).astype(np.uint8) * 255
+        x, y, w, h = cv2.boundingRect(mask)
 
-        # Sort characters based on their x-coordinate
-        sorted_indices = sorted(range(len(bounding_boxes)), key=lambda i: bounding_boxes[i][0])
-        sorted_chars = [chars[i] for i in sorted_indices]
+        if w < 10 or h < 10:  # loại bỏ nhiễu
+            continue
 
-        return sorted_chars
+        char = binary_image[y:y + h, x:x + w]
+        resized_char = cv2.resize(char, (18, 18))
+        padded_char = np.pad(resized_char, ((5, 5), (5, 5)), mode='constant', constant_values=0)
 
-    def predict_chars(self, chars):
-        if not chars:
-            return []  # Return empty if no chars
+        chars.append(padded_char)
+        bounding_boxes.append((x, y, w, h))
 
-        chars_batch = np.stack(chars)
-        model_pred = self.model.predict(chars_batch)
-        pred_labels = np.argmax(model_pred, axis=1)
-        pred = [self.char_labels[label] for label in pred_labels]
-        return pred
+    combined = list(zip(bounding_boxes, chars))
+    sorted_combined = sorted(combined, key=lambda item: item[0][0])
+    sorted_chars = [item[1] for item in sorted_combined]
+
+    # Hiển thị chữ cái được sắp xếp
+    fig, axs = plt.subplots(1, len(sorted_chars), figsize=(15, 5))
+    for i, char_img in enumerate(sorted_chars):
+        axs[i].imshow(char_img, cmap='gray')
+        axs[i].axis('off')
+    plt.show()
+
+    return sorted_chars
 
 
-if __name__ == "__main__":
-    pred_model = PredictImage('model_result/model.h5')
-    chars = pred_model.preprocess_img('test/Screenshot 2024-11-21 at 8.27.24 PM.png')
-    preds = pred_model.predict_chars(chars)
-    print("Dự đoán:", preds)
+def load_model(model_path):
+    return tf.keras.models.load_model(model_path)
+
+
+def predict_chars(model, chars):
+    chars_batch = np.stack(chars)
+    chars_batch = chars_batch.astype("float32") / 255  # Chuẩn hóa dữ liệu
+    chars_batch = chars_batch.reshape(-1, 28, 28, 1)  # Đảm bảo dữ liệu có hình dạng (28, 28, 1)
+
+    model_pred = model.predict(chars_batch)
+    pred_labels = np.argmax(model_pred, axis=1)
+    pred = [char_labels[label] for label in pred_labels]
+    return pred
+
+
+def main(filepath):
+    model = load_model("model_result/emnist_model.keras")
+    sorted_chars = preprocess_and_segment_image(filepath)
+    predictions = predict_chars(model, sorted_chars)
+
+    print("Dự đoán ký tự:", predictions)
+
+
+# Gọi hàm chính với đường dẫn đến ảnh
+main("test/test1.png")
+main("test/test2.png")
+main("test/test3.png")
+main("test/test4.png")
