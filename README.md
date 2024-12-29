@@ -8,6 +8,3 @@
 * Mỗi hàng là một hình ảnh riêng biệt, 785 cột. Cột đầu tiên = class_label (xem maps.txt để biết định nghĩa nhãn lớp). Mỗi cột sau đại diện cho một giá trị pixel (tổng cộng 784 cho hình ảnh 28 x 28)
 * Phần bài sử dụng là EMNIST Balanced:  131,600 ký tự. 47 lớp balanced. Nó được lấy từ tập dữ liệu ByMerge để giảm các lỗi phân loại sai do chữ in hoa và chữ thường và cũng có số lượng mẫu bằng nhau trên mỗi lớp.
 * Trước khi chạy predict.py, hãy download dataset https://drive.google.com/drive/folders/1z4Ls3boRTdK6Ykh5X5QbrVVOLSCb21MA?usp=sharing và unzip tại ../data
-
-
-* Nhóm 10 gồm 5 thành viên: ![image](https://github.com/user-attachments/assets/51f7d776-bb02-4a73-96d0-7db00de3b9c3)
